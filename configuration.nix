@@ -12,13 +12,14 @@
 #
 # Install workflow:
 #
-# 1. Install NixOS normally (minimal ISO). `nixos-generate-config` produces
-#    /etc/nixos/hardware-configuration.nix (filesystems, microcode); keep it.
+# 1. Install NixOS normally (minimal ISO, see image/). `nixos-generate-config`
+#    produces /etc/nixos/hardware-configuration.nix (filesystems, microcode);
+#    keep it.
 # 2. Put this file at /etc/nixos/configuration.nix.
 # 3. `nixos-rebuild switch`.
 #
-# TODO(larry): grep for "TODO" -- hostname, timezone, user, GPU driver, WiFi,
-# and Bluetooth are placeholders pending hardware details.
+# TODO(larry): grep for "TODO" -- hostname, user password, SSH key, GPU
+# driver, WiFi, and Bluetooth are placeholders pending hardware details.
 
 { config, lib, pkgs, ... }:
 
@@ -26,6 +27,47 @@
   imports = [
     ./hardware-configuration.nix # generated during install; not hand-edited
   ];
+
+  #### System ##################################################################
+
+  time.timeZone = "UTC";
+
+  # Handy when the box misbehaves; delete if you want it truly bare.
+  environment.systemPackages = with pkgs; [ vim git ];
+
+  # Remote administration from another machine, so this box never needs more
+  # than a TTY. This one option brings the sshd binary, its systemd unit, and
+  # a firewall exception for port 22; nothing to add to systemPackages.
+  services.openssh = {
+    enable = true;
+    settings = {
+      # Key-only login; put your public key in users.users.larry below.
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+    };
+  };
+
+  # "Unfree" is nixpkgs jargon for a package whose license is not a free/open
+  # source one -- the Steam client is proprietary, closed-source software.
+  # Nixpkgs refuses to install unfree packages unless you opt in; this
+  # predicate scopes the opt-in to exactly these packages, rather than the
+  # blanket `nixpkgs.config.allowUnfree = true`. Extend the list if the GPU
+  # turns out to be NVIDIA ("nvidia-x11", "nvidia-settings").
+  nixpkgs.config.allowUnfreePredicate =
+    pkg:
+    builtins.elem (lib.getName pkg) [
+      "steam"
+      "steam-unwrapped"
+      "steam-original"
+      "steam-run"
+    ];
+
+  # The NixOS release this machine was FIRST installed with -- 26.05, matching
+  # the ISO in image/. Not "the version currently running": it only tells
+  # stateful components which era of on-disk formats and defaults their data
+  # was created with. Set once at install time and never changed afterwards,
+  # even when upgrading the system later.
+  system.stateVersion = "26.05";
 
   #### Boot ####################################################################
 
@@ -125,37 +167,13 @@
     # TTY login password. CHANGE THIS after first boot with `passwd`, or
     # replace with hashedPassword (generate one via `mkpasswd -m sha-512`).
     initialPassword = "changeme";
+    # SSH public keys allowed to log in as this user. Managed declaratively:
+    # written to /etc/ssh/authorized_keys.d/larry, not ~/.ssh/authorized_keys.
+    openssh.authorizedKeys.keys = [
+      # TODO: "ssh-ed25519 AAAA... larry@mac"
+    ];
   };
 
   # To skip the password prompt entirely someday:
   # services.getty.autologinUser = "larry";
-
-  #### System ##################################################################
-
-  # time.timeZone = "..."; # TODO
-
-  # Handy when the box misbehaves; delete if you want it truly bare.
-  environment.systemPackages = with pkgs; [ vim git ];
-
-  # Remote administration from another machine, so this box never needs more
-  # than a TTY. Uncomment if wanted:
-  # services.openssh.enable = true;
-
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  # Steam is unfree; this keeps the exception narrowly scoped instead of a
-  # blanket allowUnfree. Extend the list if the GPU turns out to be NVIDIA
-  # ("nvidia-x11", "nvidia-settings").
-  nixpkgs.config.allowUnfreePredicate =
-    pkg:
-    builtins.elem (lib.getName pkg) [
-      "steam"
-      "steam-unwrapped"
-      "steam-original"
-      "steam-run"
-    ];
-
-  # The NixOS release this machine was FIRST installed with. Set it once at
-  # install time and never change it, even when upgrading later.
-  system.stateVersion = "25.11"; # TODO: match your install media
 }
