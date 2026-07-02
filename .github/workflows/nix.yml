@@ -8,25 +8,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Install Nix, with <nixpkgs> pointing at the same channel the machine
-      # tracks, so CI and the box evaluate the exact same package set.
       - uses: cachix/install-nix-action@v31
         with:
-          nix_path: nixpkgs=channel:nixos-26.05
+          extra_nix_config: experimental-features = nix-command flakes
 
+      # --inputs-from . resolves nixpkgs through flake.lock, so the tools come
+      # from the exact same nixpkgs revision the machine builds from.
       - name: statix (anti-pattern lints)
-        run: nix-shell -p statix --run 'statix check .'
+        run: nix run --inputs-from . nixpkgs#statix -- check .
 
       - name: deadnix (dead code)
-        run: nix-shell -p deadnix --run 'deadnix --fail .'
+        run: nix run --inputs-from . nixpkgs#deadnix -- --fail .
 
       - name: nixfmt (format check)
-        run: nix-shell -p nixfmt --run "git ls-files '*.nix' | xargs nixfmt --check"
+        run: nix run --inputs-from . nixpkgs#nixfmt -- --check $(git ls-files '*.nix')
 
       # The real type check: evaluate the whole NixOS system. Catches options
-      # that do not exist (typos) and values of the wrong type. The stub
-      # stands in for the hardware-configuration.nix generated on the machine.
+      # that do not exist (typos) and values of the wrong type.
       - name: eval (NixOS option type check)
-        run: |
-          cp ci/hardware-configuration-stub.nix hardware-configuration.nix
-          nix-instantiate '<nixpkgs/nixos>' -A system --arg configuration ./configuration.nix
+        run: nix eval .#nixosConfigurations.gaming.config.system.build.toplevel.drvPath

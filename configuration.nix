@@ -12,11 +12,14 @@
 #
 # Install workflow:
 #
-# 1. Install NixOS normally (minimal ISO, see image/). `nixos-generate-config`
-#    produces /etc/nixos/hardware-configuration.nix (filesystems, microcode);
-#    keep it.
-# 2. Put this file at /etc/nixos/configuration.nix.
-# 3. `nixos-rebuild switch`.
+# 1. Install NixOS normally (minimal ISO, see image/).
+# 2. Clone this repo onto the machine. Overwrite the placeholder
+#    hardware-configuration.nix with the machine's real one, generated during
+#    install, and commit it:
+#    `nixos-generate-config --show-hardware-config > hardware-configuration.nix`
+# 3. `sudo nixos-rebuild switch --flake .#gaming`. (Once the hostname is set,
+#    plain `--flake .` also works: it selects the config whose name matches
+#    the hostname.)
 #
 # TODO(larry): grep for "TODO" -- hostname, user password, GPU driver, WiFi,
 # Bluetooth, and Tailscale are placeholders pending details.
@@ -25,12 +28,17 @@
 
 {
   imports = [
-    ./hardware-configuration.nix # generated during install; not hand-edited
+    ./hardware-configuration.nix # placeholder until install day; see workflow above
   ];
 
   #### System ##################################################################
 
   time.timeZone = "UTC";
+
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   # Makes these packages' commands available in every user's shell.
   environment.systemPackages = with pkgs; [
