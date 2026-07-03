@@ -1,0 +1,6 @@
+# Top-level namespaces (services.*, programs.*) intentionally repeat across
+# the thematic sections of configuration.nix; merging them into single blocks
+# would destroy that organization.
+disabled = [
+  "repeated_keys"
+]

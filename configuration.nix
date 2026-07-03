@@ -21,8 +21,8 @@
 #    plain `--flake .` also works: it selects the config whose name matches
 #    the hostname.)
 #
-# TODO(larry): grep for "TODO" -- hostname, user password, GPU driver, WiFi,
-# Bluetooth, and Tailscale are placeholders pending details.
+# TODO(larry): grep for "TODO" -- hostname, user password, WiFi, and Tailscale
+# are placeholders pending details.
 
 { lib, pkgs, ... }:
 
@@ -77,6 +77,10 @@
 
       # Valve's proprietary client itself, mounted inside the sandbox.
       "steam-unwrapped"
+
+      # The NVIDIA driver's proprietary userspace (OpenGL/Vulkan libraries,
+      # nvidia-smi, etc.).
+      "nvidia-x11"
     ];
 
   # The NixOS release this machine was FIRST installed with; *not* "the version
@@ -128,25 +132,40 @@
 
   #### Hardware ################################################################
 
-  # Firmware blobs; GPUs, WiFi and Bluetooth chips all need these.
-  hardware.enableRedistributableFirmware = true;
+  hardware = {
+    # Firmware blobs; GPUs, WiFi and Bluetooth chips all need these.
+    enableRedistributableFirmware = true;
 
-  # Userspace graphics (Mesa, incl. 32-bit) is enabled by programs.steam.
+    # GPU: Gigabyte GeForce RTX 3080 Ti (GA102, Ampere generation). The
+    # kernel driver is selected by services.xserver.videoDrivers below;
+    # userspace graphics (Mesa, incl. 32-bit) is enabled by programs.steam.
+    nvidia = {
+      # Ampere and newer use NVIDIA's open kernel modules, recommended by
+      # NVIDIA itself since driver 560. The userspace side (OpenGL/Vulkan
+      # libraries, nvidia-smi) stays proprietary either way -- hence the
+      # unfree exception in the System section.
+      open = true;
 
-  # GPU driver -- TODO: fill in once the card is known.
-  #
-  # AMD: nothing needed beyond Mesa above (kernel amdgpu driver is built in).
-  #   hardware.amdgpu.initrd.enable = true; # optional: KMS in initrd
-  #
-  # NVIDIA (proprietary; despite the option name this is not X-specific):
-  #   services.xserver.videoDrivers = [ "nvidia" ];
-  #   hardware.nvidia.modesetting.enable = true; # required for gamescope
-  #   hardware.nvidia.open = true;               # Turing (RTX 20xx) or newer
+      # Skip nvidia-settings, an X-based GUI tool (enabled by default),
+      # useless on a box with no desktop.
+      nvidiaSettings = false;
+    };
 
-  # Bluetooth (controllers) -- TODO once hardware is known:
-  # hardware.bluetooth.enable = true;
-  # hardware.bluetooth.powerOnBoot = true;
-  # hardware.xpadneo.enable = true; # better driver for Xbox controllers over BT
+    # Bluetooth, for the Xbox controller; the radio powers on at boot by
+    # default (hardware.bluetooth.powerOnBoot). Pair from the TTY with
+    # `bluetoothctl`.
+    bluetooth.enable = true;
+
+    # Driver for Xbox controllers over Bluetooth: correct button mappings,
+    # rumble, battery reporting. Not part of the Linux kernel itself -- it is
+    # a community-maintained module that NixOS builds separately against our
+    # kernel. (Over USB, the kernel's own xpad driver already suffices.)
+    xpadneo.enable = true;
+  };
+
+  # Despite the option's name, this loads the NVIDIA kernel driver for the
+  # whole system, not just for X.
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   #### Networking ##############################################################
 
