@@ -54,6 +54,7 @@
 
   # Makes these packages' commands available in every user's shell.
   environment.systemPackages = with pkgs; [
+    fastfetch
     git
     vim
   ];
@@ -339,5 +340,4 @@
       ];
     };
   };
-
 }
