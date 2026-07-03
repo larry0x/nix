@@ -278,21 +278,22 @@
     # DRM/KMS with Steam Big Picture inside it.
     gamescopeSession = {
       enable = true;
-      # Extra gamescope flags -- TODO: tune once the display is known, e.g.:
-      # args = [ "-W" "3840" "-H" "2160" "-r" "120" "--adaptive-sync" "--hdr-enabled" ];
+
+      # The TV is a Hisense 100U7KQ: 3840x2160, and accepts 4K@144 Hz with
+      # VRR (FreeSync Premium Pro, 48-144 Hz range) over HDMI 2.1. Game mode
+      # must be enabled on the TV's input for VRR/144 to be offered.
+      args = [
+        "-W"
+        "3840"
+        "-H"
+        "2160"
+        "-r"
+        "144"
+        "--adaptive-sync"
+        "--hdr-enabled"
+      ];
     };
-
-    # Community Proton build; runs some games upstream Proton chokes on:
-    # extraCompatPackages = [ pkgs.proton-ge-bin ];
   };
-
-  # gamescope itself is enabled by gamescopeSession above. If frame times need
-  # smoothing, grant the compositor realtime priority -- but should
-  # steam-gamescope ever fail to start, turn this back off first:
-  # programs.gamescope.capSysNice = true;
-
-  # CPU governor / niceness tweaks while a game is running:
-  # programs.gamemode.enable = true;
 
   #### Users ###################################################################
 
