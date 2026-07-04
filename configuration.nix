@@ -13,9 +13,8 @@
 # Install workflow:
 #
 # 1. Install NixOS normally (minimal ISO, see image/).
-# 2. Clone this repo onto the machine. Overwrite the placeholder
-#    hardware-configuration.nix with the machine's real one, generated during
-#    install, and commit it:
+# 2. Clone this repo onto the machine. Overwrite hardware-configuration.nix
+#    with the machine's real one, generated during install, and commit it:
 #    `nixos-generate-config --show-hardware-config > hardware-configuration.nix`
 # 3. `sudo nixos-rebuild switch --flake .#gaming`. (Once the hostname is set,
 #    plain `--flake .` also works: it selects the config whose name matches
@@ -25,7 +24,12 @@
 
 {
   imports = [
-    ./hardware-configuration.nix # placeholder until install day; see workflow above
+    # The machine's real, generated hardware-configuration.nix. To refresh it
+    # after a hardware change, run on the box:
+    # `sudo nixos-generate-config --show-hardware-config`; then, to satisfy
+    # our tooling: `just fmt`, and drop the unused `pkgs` argument the
+    # generator emits (deadnix).
+    ./hardware-configuration.nix
   ];
 
   #### System ##################################################################
@@ -56,6 +60,7 @@
   environment.systemPackages = with pkgs; [
     fastfetch
     git
+    just
     vim
   ];
 
