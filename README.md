@@ -165,7 +165,7 @@ just test
    sudo nixos-install --flake .#gaming --no-root-passwd
    ```
 
-9. RebootL
+9. Reboot:
 
    ```sh
    sudo reboot
