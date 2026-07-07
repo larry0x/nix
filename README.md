@@ -197,3 +197,10 @@ just test
     ```sh
     ssh larry@gaming
     ```
+
+## Update
+
+```sh
+nix flake update
+just rebuild
+```
