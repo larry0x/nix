@@ -58,7 +58,6 @@ pkgs.buildEnv {
     pkgs.just
     pkgs.taplo
     pkgs.cargo-machete
-    pkgs.cargo-flamegraph
 
     # Docs
     pkgs.mdbook
@@ -92,24 +91,18 @@ pkgs.buildEnv {
     pkgs.age-plugin-yubikey
     pkgs.yubikey-manager
 
-    # CLI utilities. coreutils is the GNU one, unprefixed — it deliberately
-    # shadows the stock BSD tools (ls, date, stat, …).
-    pkgs.coreutils
+    # CLI utilities
     pkgs.bat
-    pkgs.eza
-    pkgs.starship
-    pkgs.fastfetch
     pkgs.direnv
+    pkgs.dust
+    pkgs.eza
+    pkgs.fastfetch
     pkgs.gh
-    pkgs.jq
-    pkgs.yq-go
-    pkgs.ripgrep
-    pkgs.wget
-    pkgs.tokei
-    pkgs.websocat
     pkgs.gitleaks
-    pkgs.zizmor
-    pkgs.wabt
+    pkgs.jq
+    pkgs.ripgrep
+    pkgs.starship
+    pkgs.tokei
 
     # Nix tooling
     pkgs.nixd

@@ -32,4 +32,4 @@ Roll back with `nix profile rollback`.
 - `cargo` is a thin shim that accepts rustup-style `cargo +nightly …` invocations: the `+toolchain` argument is dropped, which is correct because rustfmt in this environment _is_ the nightly one, and everything else runs on the stable toolchain.
 - mdbook and mdbook-mermaid come stock from nixpkgs; mdbook-katex is built from crates.io (nixpkgs' version is stale). The preprocessors may print a cosmetic "built against version X" warning when their locked mdbook libraries trail the mdbook binary — math and diagrams render fine regardless.
 - The docker daemon is colima (`colima start`); the docker CLI, compose, and buildx come from this flake, with the compose/buildx plugins linked into `~/.docker/cli-plugins/`.
-- coreutils are the GNU ones, unprefixed: they deliberately shadow the stock BSD `ls`, `date`, `stat`, etc.
+- No GNU coreutils: the stock BSD userland (`ls`, `date`, `stat`, etc.) stays as-is, with Rust replacements (bat, eza, dust, ripgrep) aliased over the common ones in interactive shells via `~/.zshrc`.
