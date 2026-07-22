@@ -164,6 +164,18 @@
       # untouched.
       efi.canTouchEfiVariables = true;
     };
+
+    # The board's Bluetooth radio is unused: both peripherals (keyboard,
+    # controller) connect via their 2.4G USB dongles instead, after Bluetooth
+    # proved incompatible with suspend -- a BLE keyboard advertises whenever
+    # it is powered but unconnected (on power-on, and after the disconnect
+    # that suspending itself performs), and the kernel counts any
+    # advertisement from a bonded HID device as a wake request, so the box
+    # woke right back up whenever the keyboard was on. Keep btusb from
+    # binding the radio at all; without it, bluetoothd (dropped from the
+    # config along with the xpadneo driver) would have nothing to drive
+    # anyway.
+    blacklistedKernelModules = [ "btusb" ];
   };
 
   #### Hardware ################################################################
@@ -196,35 +208,25 @@
       powerManagement.enable = true;
     };
 
-    # Bluetooth, for the Xbox controller; the radio powers on at boot by
-    # default (hardware.bluetooth.powerOnBoot). Pair from the TTY with
-    # `bluetoothctl`.
-    bluetooth.enable = true;
-
-    # Driver for Xbox controllers over Bluetooth: correct button mappings,
-    # rumble, battery reporting. Not part of the Linux kernel itself -- it is
-    # a community-maintained module that NixOS builds separately against our
-    # kernel. (Over USB, the kernel's own xpad driver already suffices.)
-    xpadneo.enable = true;
   };
 
   # Despite the option's name, this loads the NVIDIA kernel driver for the
   # whole system, not just for X.
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  # Bluetooth wake-from-suspend. The kernel side needs no config: on suspend
-  # it arms the adapter with an allow-list of paired HID devices (BlueZ
-  # "WakeAllowed", on by default for keyboards/controllers), whose reconnect
-  # attempt -- a keypress while the box sleeps -- becomes a USB remote-wakeup
-  # signal. What IS off by default is the USB side: every hop the signal
-  # traverses must have power/wakeup enabled. These rules arm all three hops:
-  # the BT adapter itself (Intel AC 3168 combo, 8087:0aa7), its root hub, and
-  # the chipset xHCI PCI function both hang off (0000:02:00.0). The root hub
-  # is matched by serial, which carries the stable PCI address, because bus
-  # names (usb1, ...) depend on enumeration order.
+  # Wake-from-suspend by the keyboard's 2.4G USB dongle. The kernel enables
+  # USB remote wakeup by default for keyboard-class HID interfaces -- which
+  # is why the dongle itself needs no rule here, and why the controller's
+  # dongle (a vendor-class gamepad) cannot wake the box -- but the keypress
+  # signal only reaches the platform if every hop above the dongle is armed
+  # too, and those default to off: the root hub, and the xHCI PCI function
+  # whose PME raises the ACPI wake event. Both belong to the chipset xHCI at
+  # 0000:02:00.0. The root hub is matched by serial, which carries the
+  # stable PCI address (bus names like usb1 depend on enumeration order),
+  # plus speed, scoping it to the high-speed hub that low-speed dongles
+  # enumerate under.
   services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="8087", ATTR{idProduct}=="0aa7", ATTR{power/wakeup}="enabled"
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{serial}=="0000:02:00.0", ATTR{power/wakeup}="enabled"
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{serial}=="0000:02:00.0", ATTR{speed}=="480", ATTR{power/wakeup}="enabled"
     ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:02:00.0", ATTR{power/wakeup}="enabled"
   '';
 
