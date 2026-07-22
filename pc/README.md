@@ -9,12 +9,15 @@ Minimalist NixOS gaming machine
 | Motherboard | ASRock A520M-ITX/AC                 | 2022-11-11    | pccomponents.pt |       143.07 € |
 | CPU         | AMD Ryzen 9 5900X                   | 2021-09-19    | pccomponents.pt |       534.58 € |
 | CPU Cooler  | be quiet! Pure Loop 3               | 2026-06-28    | amazon.es       |        80.65 € |
+| CPU Fans    | Noctua NF-A12x15 PWM                | 2026-07-20    | amazon.es       |        52.78 € |
 | RAM         | Corsair Vengeance DDR4 3600 2x16G   | 2021-09-19    | pccomponents.pt |       180.74 € |
 | GPU         | Gigabyte GeForce RTX 3080 Ti Vision | 2021-09-19    | pcdiga.com      |     1,599.90 € |
 | SSD         | Samsung 980 Pro 1TB PCIe NVMe M.2   | 2022-05-11    | pccomponents.pt |       135.95 € |
 | PSU         | CORSAIR SF850                       | 2026-06-28    | amazon.es       |       177.00 € |
 | Case        | Thermaltake TR100                   | 2026-06-28    | amazon.es       |       167.07 € |
-| **Total**   |                                     |               |                 | **3,018.91 €** |
+| Display     | Hisense 100U7KQ                     | 2025-07-08    | worten.pt       |     2,599.00 € |
+| Audio       | TBD                                 | TBD           | TBD             |            TBD |
+| **Total**   |                                     |               |                 | **5,670.69 €** |
 
 ## Installation
 
